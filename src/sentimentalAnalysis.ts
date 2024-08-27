@@ -1,7 +1,7 @@
 import Sentiment from 'sentiment';
-import { SentimentResult } from '../types/sentiment.rypes';
+import { SentimentResult } from '../types/sentimentAnalysis.types';
 
-export const sentimentAnalysis = (review: string): string => {
+export const sentimentAnalysis = (review: string): SentimentResult => {
   const sentiment = new Sentiment();
   const result = sentiment.analyze(review);
   return result
