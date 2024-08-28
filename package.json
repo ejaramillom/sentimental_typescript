@@ -4,6 +4,9 @@
     "gts": "^5.3.1",
     "sentiment": "^5.0.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "fs": "^0.0.1-security",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0"
   }
 }

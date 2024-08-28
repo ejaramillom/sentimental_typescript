@@ -11,5 +11,5 @@ const sentimentAnalysis = (review) => {
     return result;
 };
 exports.sentimentAnalysis = sentimentAnalysis;
-const reviewText = "This product is horrible! i don't like it...";
-console.log((0, exports.sentimentAnalysis)(reviewText));
+// const reviewText = "This product is horrible! i don't like it..."
+// console.log(sentimentAnalysis(reviewText));

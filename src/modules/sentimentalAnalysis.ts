@@ -7,6 +7,6 @@ export const sentimentAnalysis = (review: string): SentimentResult => {
   return result
 }
 
-const reviewText = "This product is horrible! i don't like it..."
+// const reviewText = "This product is horrible! i don't like it..."
 
-console.log(sentimentAnalysis(reviewText));
+// console.log(sentimentAnalysis(reviewText));
