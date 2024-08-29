@@ -1,3 +1,10 @@
+export interface Evaluator {
+  name: string;
+  resultName: string;
+  sentimentAnalysis: (review: string) => SentimentResult;
+  evaluateSentiment: (review: SentimentResult) => SentimentCsvResult; 
+} 
+
 export interface SentimentResult {
   comparative: number;
   negative: string[];

@@ -1,22 +1,37 @@
 import fs from 'fs';
 import csv from 'csv-parser';
-import { sentimentAnalysis } from './sentimentalAnalysis';
-import { SentimentResult, SentimentCsvElement, SentimentCsvResult } from '../types/sentimentAnalysis.types';
+import { Evaluator, SentimentResult, SentimentCsvElement, SentimentCsvResult } from '../types/sentimentAnalysis.types';
 
-export const csvFileReader = (name: string, resultName: string): Promise<SentimentCsvResult> => {
+export const csvFileReader = ({name, resultName, sentimentAnalysis, evaluateSentiment}: Evaluator): Promise<SentimentCsvResult> => {
   return new Promise((resolve, reject) => {
     const results: Array<SentimentCsvResult> = [];
+    csvResultUnlink(resultName);
+
+    // i considered a set of options to drill the data and create the results file:
+    // - iterating over an array of objects in memory
+    // - read every line of the file and asyncronously write the result file
+    // 
+    // the first approach is usually resource intensive, while the other sacrifices control
+    // and can lead to callback hell
+    //
+    // i decided to use the second approach as i consider it can be more scalable in time
+    // although less maintainable and maybe new engineers would take longer to contribute
+    // to the maintenance
 
     fs.createReadStream(name)
       .pipe(csv())
       .on('data', async (data: SentimentCsvElement) => {
         try {
+          // we take one line, make sentiment analysis, and add sentiment result
+          // both modules are separated from csvManager, as they have separate concerns
+          // and responsibilities
+
           const reviewAnalisys: SentimentResult = sentimentAnalysis(data.review_text);
           const updatedData: SentimentCsvResult = evaluateSentiment(reviewAnalisys);
           await csvFileWriter(resultName, updatedData);
           results.push(updatedData);
         } catch (error) {
-          console.error('Error processing data:', error);
+          console.error('Error processing data: ', error);
         }
       })
       .on('end', () => {
@@ -33,6 +48,8 @@ export const csvFileWriter = (resultName: string, review: SentimentCsvResult): P
     const writeStream = fs.createWriteStream(resultName, { flags: 'a' });
     const csvRow = `${review.tokens.join(' ')},${review.sentiment}\n`;
 
+    // we generate a line with the tokens to be saved in the csv and the write the file
+
     writeStream.write(csvRow, (error) => {
       if (error) {
         reject(error);
@@ -47,18 +64,12 @@ export const csvFileWriter = (resultName: string, review: SentimentCsvResult): P
   });
 };
 
-const evaluateSentiment = (review: SentimentResult): SentimentCsvResult => {
-  let sentiment: string;
-  const NEGATIVE_SENTIMENT_WEIGHT = -2;
-  const NEUTRAL_SENTIMENT_WEIGHT = 2; 
-
-  if (review.score < NEGATIVE_SENTIMENT_WEIGHT) {
-    sentiment = 'negative';
-  } else if (review.score >= NEGATIVE_SENTIMENT_WEIGHT && review.score < NEUTRAL_SENTIMENT_WEIGHT) {
-    sentiment = 'neutral';
-  } else {
-    sentiment = 'positive';
+const csvResultUnlink = (resultName: string): void => {
+  // if the result file name provided to the module does not exist, then it continues
+  // execution
+  try {
+    if (fs.existsSync(resultName)) fs.unlinkSync(resultName); 
+  } catch (error) {
+    console.error(`Error deleting file ${resultName}:`, error);
   }
-
-  return { ...review, sentiment };
-};
+}
