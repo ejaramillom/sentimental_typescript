@@ -3,8 +3,7 @@ import { SentimentResult } from '../types/sentimentAnalysis.types';
 
 export const sentimentAnalysis = (review: string): SentimentResult => {
   const sentiment = new Sentiment();
-  const result = sentiment.analyze(review);
-  return result
+  return sentiment.analyze(review);
 }
 
 // const reviewText = "This product is horrible! i don't like it..."

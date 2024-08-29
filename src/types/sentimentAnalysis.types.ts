@@ -1,17 +1,16 @@
 export interface SentimentResult {
-  score: number;
   comparative: number;
+  negative: string[];
+  positive: string[];
+  score: number;
   tokens: string[];
   words: string[];
-  positive: string[];
-  negative: string[];
-  // sentiment?: string;
 }
 
 export interface SentimentCsvElement {
   review_id: number;
-  review_text: string;
   review_rating: number;
+  review_text: string;
 }
 
 export interface SentimentCsvResult extends SentimentResult {
