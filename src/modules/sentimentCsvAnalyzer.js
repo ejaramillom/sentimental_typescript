@@ -17,34 +17,83 @@ const fs_1 = __importDefault(require("fs"));
 const csv_parser_1 = __importDefault(require("csv-parser"));
 const sentimentCsvAnalyzer = (fileName, resultFileName) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const csvReader = yield csvFileReader(fileName);
-        let csvWriter = yield csvFileWriter(resultFileName);
-        console.log(csvReader, fileName, resultFileName);
+        const csvReader = yield csvFileReader(fileName, resultFileName);
+        console.log('CSV Processing Completed:', csvReader);
     }
     catch (error) {
         console.error('Error reading the csv file: ', error);
     }
 });
 exports.sentimentCsvAnalyzer = sentimentCsvAnalyzer;
-const csvFileReader = (name) => {
+const csvFileReader = (name, resultName) => {
     return new Promise((resolve, reject) => {
         const results = [];
         fs_1.default.createReadStream(name)
             .pipe((0, csv_parser_1.default)())
-            .on('data', (data) => results.push(data))
+            .on('data', (data) => __awaiter(void 0, void 0, void 0, function* () {
+            try {
+                const updatedData = yield evaluateSentiment(data);
+                console.log(data);
+                yield csvFileWriter(resultName, updatedData);
+                results.push(updatedData);
+            }
+            catch (error) {
+                console.error('Error processing data:', error);
+            }
+        }))
             .on('end', () => {
-            // console.log(results);
-            resolve(results);
+            resolve();
         })
             .on('error', (error) => {
             reject(error);
         });
     });
 };
-const csvFileWriter = (name) => {
+const csvFileWriter = (resultName, review) => {
     return new Promise((resolve, reject) => {
+        try {
+            resolve();
+        }
+        catch (error) {
+            console.log(review, resultName);
+            reject(console.error('Error reading the csv file: ', error));
+        }
+        // const writeStream = fs.createWriteStream(resultName, { flags: 'a' });
+        // const csvRow = `${review.tokens.join(' ')},${review.sentiment}\n`;
+        // writeStream.write(csvRow, (error) => {
+        //   if (error) {
+        //     reject(error);
+        //   } else {
+        //     resolve();
+        //   }
+        // });
+        // writeStream.on('error', (error) => {
+        //   reject(error);
+        // });
+    });
+};
+const evaluateSentiment = (review) => {
+    return new Promise((resolve) => {
+        let sentiment;
+        // console.log('review score: ', review.score);
+        if (review.review_rating < -2) {
+            sentiment = 'negative';
+        }
+        else if (review.review_rating >= -2 && review.review_rating < 2) {
+            sentiment = 'neutral';
+        }
+        else {
+            sentiment = 'positive';
+        }
+        // const updatedReview: SentimentCsvResult = { ...review, sentiment };
+        // resolve(updatedReview);
+        resolve(...review, sentiment);
     });
 };
 const fileName = 'sentiment_analysis.csv';
 const resultFileName = 'sentiment_results.csv';
-console.log((0, exports.sentimentCsvAnalyzer)(fileName, resultFileName));
+(0, exports.sentimentCsvAnalyzer)(fileName, resultFileName).then(() => {
+    console.log('Sentiment analysis completed.');
+}).catch((error) => {
+    console.error('Error during sentiment analysis:', error);
+});
