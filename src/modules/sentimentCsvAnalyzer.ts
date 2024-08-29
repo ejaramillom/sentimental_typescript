@@ -1,6 +1,7 @@
 import fs from 'fs';
 import csv from 'csv-parser';
 import { SentimentResult, SentimentCsvElement, SentimentCsvResult } from '../types/sentimentAnalysis.types';
+import { sentimentAnalysis } from './sentimentalAnalysis';
 
 export const sentimentCsvAnalyzer = async (fileName: string, resultFileName: string): Promise<void> => {
   try {
@@ -19,8 +20,9 @@ const csvFileReader = (name: string, resultName: string): Promise<void> => {
       .pipe(csv())
       .on('data', async (data: SentimentCsvElement) => {
         try {
-          const updatedData = await evaluateSentiment(data);
-          console.log(data);
+          const reviewAnalisys: SentimentResult = sentimentAnalysis(data.review_text);
+          const updatedData: SentimentCsvResult = evaluateSentiment(reviewAnalisys);
+          // console.log(updatedData);
           await csvFileWriter(resultName, updatedData);
           results.push(updatedData);
         } catch (error) {
@@ -62,23 +64,23 @@ const csvFileWriter = (resultName: string, review: SentimentCsvResult): Promise<
   });
 };
 
-const evaluateSentiment = (review: SentimentCsvElement): Promise<SentimentCsvResult> => {
-  return new Promise((resolve) => {
+const evaluateSentiment = (review: SentimentResult): SentimentCsvResult => {
+  // return new Promise((resolve) => {
     let sentiment: string;
     // console.log('review score: ', review.score);
 
-    if (review.review_rating < -2) {
+    if (review.score < -2) {
       sentiment = 'negative';
-    } else if (review.review_rating >= -2 && review.review_rating < 2) {
+    } else if (review.score >= -2 && review.score < 2) {
       sentiment = 'neutral';
     } else {
       sentiment = 'positive';
     }
 
-    // const updatedReview: SentimentCsvResult = { ...review, sentiment };
+    const updatedReview: SentimentCsvResult = { ...review, sentiment };
     // resolve(updatedReview);
-    resolve(...review, sentiment);
-  });
+    return updatedReview;
+  // });
 };
 
 const fileName = 'sentiment_analysis.csv';

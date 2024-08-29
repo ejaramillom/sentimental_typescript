@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sentimentCsvAnalyzer = void 0;
 const fs_1 = __importDefault(require("fs"));
 const csv_parser_1 = __importDefault(require("csv-parser"));
+const sentimentalAnalysis_1 = require("./sentimentalAnalysis");
 const sentimentCsvAnalyzer = (fileName, resultFileName) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const csvReader = yield csvFileReader(fileName, resultFileName);
@@ -32,8 +33,9 @@ const csvFileReader = (name, resultName) => {
             .pipe((0, csv_parser_1.default)())
             .on('data', (data) => __awaiter(void 0, void 0, void 0, function* () {
             try {
-                const updatedData = yield evaluateSentiment(data);
-                console.log(data);
+                const reviewAnalisys = (0, sentimentalAnalysis_1.sentimentAnalysis)(data.review_text);
+                const updatedData = evaluateSentiment(reviewAnalisys);
+                // console.log(updatedData);
                 yield csvFileWriter(resultName, updatedData);
                 results.push(updatedData);
             }
@@ -73,22 +75,22 @@ const csvFileWriter = (resultName, review) => {
     });
 };
 const evaluateSentiment = (review) => {
-    return new Promise((resolve) => {
-        let sentiment;
-        // console.log('review score: ', review.score);
-        if (review.review_rating < -2) {
-            sentiment = 'negative';
-        }
-        else if (review.review_rating >= -2 && review.review_rating < 2) {
-            sentiment = 'neutral';
-        }
-        else {
-            sentiment = 'positive';
-        }
-        // const updatedReview: SentimentCsvResult = { ...review, sentiment };
-        // resolve(updatedReview);
-        resolve(...review, sentiment);
-    });
+    // return new Promise((resolve) => {
+    let sentiment;
+    // console.log('review score: ', review.score);
+    if (review.score < -2) {
+        sentiment = 'negative';
+    }
+    else if (review.score >= -2 && review.score < 2) {
+        sentiment = 'neutral';
+    }
+    else {
+        sentiment = 'positive';
+    }
+    const updatedReview = Object.assign(Object.assign({}, review), { sentiment });
+    // resolve(updatedReview);
+    return updatedReview;
+    // });
 };
 const fileName = 'sentiment_analysis.csv';
 const resultFileName = 'sentiment_results.csv';

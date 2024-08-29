@@ -5,6 +5,7 @@ export interface SentimentResult {
   words: string[];
   positive: string[];
   negative: string[];
+  // sentiment?: string;
 }
 
 export interface SentimentCsvElement {
